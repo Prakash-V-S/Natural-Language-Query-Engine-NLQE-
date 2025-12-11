@@ -28,9 +28,28 @@ async def run_query(req: QueryRequest):
     # STEP 2 — Execute SQL
     result = run_sql(sql)
 
-    parsed["data_rows"] = result.get("rows", [])
-    parsed["data_columns"] = result.get("columns", [])
-    parsed["sql_error"] = result.get("error")
+    rows = result.get("rows", [])
+    cols = result.get("columns", [])
+    err  = result.get("error")
+
+    parsed["data_rows"] = rows
+    parsed["data_columns"] = cols
+    parsed["sql_error"] = err
+
+    # NEW CHECK — If no data returned
+    if err:
+        return {
+            "status": "error",
+            "message": "SQL execution error",
+            "data": parsed
+        }
+
+    if len(rows) == 0:
+        return {
+            "status": "ok",
+            "message": "No data found",
+            "data": parsed
+        }
 
     return {
         "status": "ok",
